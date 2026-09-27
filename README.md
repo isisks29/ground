@@ -79,6 +79,7 @@ on:
         default: ""
 
 jobs:
+  # ---------- job 1: 编译 bypass.m -> bypass.dylib ----------
   build-bypass:
     name: Compile bypass.dylib (iphoneos arm64)
     runs-on: macos-latest
@@ -110,6 +111,8 @@ jobs:
             -dynamiclib \
             -O2 \
             -framework Foundation \
+            -framework UIKit \
+            -fobjc-arc \
             $EXTRA \
             -o bypass.dylib \
             "$SRC"
@@ -125,8 +128,6 @@ jobs:
           name: bypass.dylib
           path: bypass.dylib
           if-no-files-found: error
-
-
 
 
 
