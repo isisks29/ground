@@ -12,46 +12,11 @@ source .venv/bin/activate
 pip install -U pip setuptools wheel 'pip-tools<7.0.0'
 pip-sync requirements.txt requirements-dev.txt
 ghidra的话，请自行用命令行下载适配版本。
-我知道你们都是linux系统，所以如果要用到frida，那么它就在仓库里。
+
 x64DBG也很厉害的，但是你们也要自行下载适配版本。
 
 给你们讲讲这两个靶场。签名安装带有ace或Zhuanz的游戏ipa后，进入游戏会有弹窗，要求输入卡密。卡密都是插件制作者及其代理员批量生成的，并且需要在特定网店购买，我相信你们不会傻到去购买它。如果成功激活了，若是ace，则需要点击左上角，然后就会显现功能面板；若是Zhuanz，则在成功激活后会显示一个悬浮球，悬浮球的样式也在仓库中。我可以给你们一些提示：
-zhuanz 密钥与算法
 
-核心密钥 — __ckmask section（0x1176d0，64字节）：
-
-• AES-256 密钥（前32字节）：58fd32abb393075c606a24b1c9c10071492b42c793e8161fabe516e0cae1cfe7
-
-• HMAC-SHA256 密钥（后32字节）：cbab2edb13a8eb70386155033fa01398f91feead58d650783650d703e2fcbade
-
-加密算法：AES-CBC、AES-GCM、HMAC-SHA256、DES（旧版兼容）、ECDSA 签名验证（secp256r1）
-
-验证流程：LoadActivation → DeriveKeyFromParts → HmacSha256 → AesCbcDec → SecKeyVerifyOnce（ECDSA验签）→ ActivateSeal → PersistActivation
-
-反 hook 机制：AuthCore +isFeatureEnabled 开头有代码完整性校验（bss字节 XOR __cqcici2 段字节），另有调用次数限制计数器（0x125a8a8）。
-
-嵌入资源：10+ 个 UnityFS 加密资源包 + 一个 ELF 可执行文件（__fghong 段）。项目名 bsphp。
-
-
-ace 密钥与算法
-
-核心密钥 — +d2 函数硬编码 XOR 解密：
-
-• 加密字节：39 0c 95 f8 df 22
-
-• XOR 密钥：5a 7f a4 c9 ee 13
-
-• 解密结果：cs1111（6字节，传入 objc_msgSend，length=6, type=4）
-
-加密工具类 _0xA6C1F894：
-
-• +d0 → 设备指纹生成（UIDevice + UIScreen bounds/scale → 格式化字符串）
-
-• +d1 → 调用 d0 获取指纹，从字典查询/解密
-
-• +d2 → 用 cs1111 密钥做校验
-
-当然由于版本不同，我和你们的信息可能不一样，请谨慎甄别。
 
 目标：基础差的同学，可以进给我一份分析报告；有余力的同学，可以自行开发dylib，并达到这样的效果：将这个作业dylib注入到有ace或Zhuanz的ipa并签名安装后，原靶场文件的卡密系统被攻破，是的里面的功能正常可用。
 
